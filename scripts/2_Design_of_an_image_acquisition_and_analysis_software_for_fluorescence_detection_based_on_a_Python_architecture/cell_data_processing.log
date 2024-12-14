@@ -1,0 +1,579 @@
+2024-12-05 16:05:02 - INFO - 
+Filtered JSON Output: {
+    "A1": {
+        "state": null,
+        "mean_green": 198.06,
+        "result": 0,
+        "comment": ""
+    },
+    "A2": {
+        "state": null,
+        "mean_green": 86.72,
+        "result": 0,
+        "comment": ""
+    },
+    "A3": {
+        "state": null,
+        "mean_green": 84.15333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "A4": {
+        "state": null,
+        "mean_green": 94.88,
+        "result": 0,
+        "comment": ""
+    },
+    "A5": {
+        "state": null,
+        "mean_green": 103.90666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "A6": {
+        "state": null,
+        "mean_green": 97.02,
+        "result": 0,
+        "comment": ""
+    },
+    "A7": {
+        "state": null,
+        "mean_green": 102.54,
+        "result": 0,
+        "comment": ""
+    },
+    "A8": {
+        "state": null,
+        "mean_green": 106.41333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "A9": {
+        "state": null,
+        "mean_green": 101.40666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "A10": {
+        "state": null,
+        "mean_green": 97.6,
+        "result": 0,
+        "comment": ""
+    },
+    "A11": {
+        "state": null,
+        "mean_green": 103.73333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "A12": {
+        "state": null,
+        "mean_green": 198.52,
+        "result": 0,
+        "comment": ""
+    },
+    "B1": {
+        "state": null,
+        "mean_green": 211.19333333333333,
+        "result": 1,
+        "comment": ""
+    },
+    "B2": {
+        "state": null,
+        "mean_green": 137.70666666666668,
+        "result": 0,
+        "comment": ""
+    },
+    "B3": {
+        "state": null,
+        "mean_green": 87.20666666666666,
+        "result": 0,
+        "comment": ""
+    },
+    "B4": {
+        "state": null,
+        "mean_green": 236.58666666666667,
+        "result": 1,
+        "comment": ""
+    },
+    "B5": {
+        "state": null,
+        "mean_green": 146.54666666666665,
+        "result": 0,
+        "comment": ""
+    },
+    "B6": {
+        "state": null,
+        "mean_green": 98.68666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "B7": {
+        "state": null,
+        "mean_green": 102.66,
+        "result": 0,
+        "comment": ""
+    },
+    "B8": {
+        "state": null,
+        "mean_green": 145.69333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "B9": {
+        "state": null,
+        "mean_green": 235.67333333333335,
+        "result": 1,
+        "comment": ""
+    },
+    "B10": {
+        "state": null,
+        "mean_green": 100.51333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "B11": {
+        "state": null,
+        "mean_green": 138.76,
+        "result": 0,
+        "comment": ""
+    },
+    "B12": {
+        "state": null,
+        "mean_green": 201.24,
+        "result": 0,
+        "comment": ""
+    },
+    "C1": {
+        "state": null,
+        "mean_green": 219.66,
+        "result": 1,
+        "comment": ""
+    },
+    "C2": {
+        "state": null,
+        "mean_green": 147.02666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "C3": {
+        "state": null,
+        "mean_green": 98.66,
+        "result": 0,
+        "comment": ""
+    },
+    "C4": {
+        "state": null,
+        "mean_green": 240.92666666666668,
+        "result": 1,
+        "comment": ""
+    },
+    "C5": {
+        "state": null,
+        "mean_green": 156.38,
+        "result": 0,
+        "comment": ""
+    },
+    "C6": {
+        "state": null,
+        "mean_green": 105.36,
+        "result": 0,
+        "comment": ""
+    },
+    "C7": {
+        "state": null,
+        "mean_green": 109.34666666666666,
+        "result": 0,
+        "comment": ""
+    },
+    "C8": {
+        "state": null,
+        "mean_green": 155.54,
+        "result": 0,
+        "comment": ""
+    },
+    "C9": {
+        "state": null,
+        "mean_green": 231.78666666666666,
+        "result": 1,
+        "comment": ""
+    },
+    "C10": {
+        "state": null,
+        "mean_green": 104.51333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "C11": {
+        "state": null,
+        "mean_green": 145.53333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "C12": {
+        "state": null,
+        "mean_green": 200.18666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "D1": {
+        "state": null,
+        "mean_green": 240.95333333333335,
+        "result": 1,
+        "comment": ""
+    },
+    "D2": {
+        "state": null,
+        "mean_green": 150.14,
+        "result": 0,
+        "comment": ""
+    },
+    "D3": {
+        "state": null,
+        "mean_green": 97.99333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "D4": {
+        "state": null,
+        "mean_green": 240.10666666666665,
+        "result": 1,
+        "comment": ""
+    },
+    "D5": {
+        "state": "negative control",
+        "mean_green": 161.89333333333335,
+        "result": 0,
+        "comment": ""
+    },
+    "D6": {
+        "state": null,
+        "mean_green": 109.07333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "D7": {
+        "state": null,
+        "mean_green": 110.51333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "D8": {
+        "state": null,
+        "mean_green": 160.09333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "D9": {
+        "state": null,
+        "mean_green": 237.10666666666665,
+        "result": 1,
+        "comment": ""
+    },
+    "D10": {
+        "state": null,
+        "mean_green": 102.11333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "D11": {
+        "state": null,
+        "mean_green": 147.23333333333332,
+        "result": 0,
+        "comment": ""
+    },
+    "D12": {
+        "state": null,
+        "mean_green": 205.36666666666667,
+        "result": 1,
+        "comment": ""
+    },
+    "E1": {
+        "state": null,
+        "mean_green": 222.90666666666667,
+        "result": 1,
+        "comment": ""
+    },
+    "E2": {
+        "state": null,
+        "mean_green": 147.52666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "E3": {
+        "state": "negative control",
+        "mean_green": 92.86,
+        "result": 0,
+        "comment": ""
+    },
+    "E4": {
+        "state": null,
+        "mean_green": 239.58666666666667,
+        "result": 1,
+        "comment": ""
+    },
+    "E5": {
+        "state": null,
+        "mean_green": 164.4,
+        "result": 0,
+        "comment": ""
+    },
+    "E6": {
+        "state": null,
+        "mean_green": 106.88,
+        "result": 0,
+        "comment": ""
+    },
+    "E7": {
+        "state": null,
+        "mean_green": 108.23333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "E8": {
+        "state": null,
+        "mean_green": 165.6,
+        "result": 0,
+        "comment": ""
+    },
+    "E9": {
+        "state": null,
+        "mean_green": 229.95333333333335,
+        "result": 1,
+        "comment": ""
+    },
+    "E10": {
+        "state": null,
+        "mean_green": 108.71333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "E11": {
+        "state": null,
+        "mean_green": 145.63333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "E12": {
+        "state": null,
+        "mean_green": 228.08666666666667,
+        "result": 1,
+        "comment": ""
+    },
+    "F1": {
+        "state": null,
+        "mean_green": 103.73333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "F2": {
+        "state": null,
+        "mean_green": 84.78,
+        "result": 0,
+        "comment": ""
+    },
+    "F3": {
+        "state": null,
+        "mean_green": 95.88666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "F4": {
+        "state": "negative control",
+        "mean_green": 103.87333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "F5": {
+        "state": null,
+        "mean_green": 107.07333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "F6": {
+        "state": null,
+        "mean_green": 103.49333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "F7": {
+        "state": null,
+        "mean_green": 104.55333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "F8": {
+        "state": null,
+        "mean_green": 105.85333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "F9": {
+        "state": null,
+        "mean_green": 110.09333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "F10": {
+        "state": null,
+        "mean_green": 104.54666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "F11": {
+        "state": null,
+        "mean_green": 100.82666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "F12": {
+        "state": null,
+        "mean_green": 89.35333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "G1": {
+        "state": null,
+        "mean_green": 90.84,
+        "result": 0,
+        "comment": ""
+    },
+    "G2": {
+        "state": "negative control",
+        "mean_green": 81.36,
+        "result": 0,
+        "comment": ""
+    },
+    "G3": {
+        "state": null,
+        "mean_green": 98.76666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "G4": {
+        "state": null,
+        "mean_green": 100.03333333333333,
+        "result": 0,
+        "comment": ""
+    },
+    "G5": {
+        "state": null,
+        "mean_green": 109.26,
+        "result": 0,
+        "comment": ""
+    },
+    "G6": {
+        "state": null,
+        "mean_green": 105.34666666666666,
+        "result": 0,
+        "comment": ""
+    },
+    "G7": {
+        "state": null,
+        "mean_green": 109.49333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "G8": {
+        "state": null,
+        "mean_green": 110.06666666666666,
+        "result": 0,
+        "comment": ""
+    },
+    "G9": {
+        "state": null,
+        "mean_green": 107.79333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "G10": {
+        "state": null,
+        "mean_green": 96.02,
+        "result": 0,
+        "comment": ""
+    },
+    "G11": {
+        "state": null,
+        "mean_green": 93.64,
+        "result": 0,
+        "comment": ""
+    },
+    "G12": {
+        "state": null,
+        "mean_green": 120.40666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "H1": {
+        "state": null,
+        "mean_green": 254.85333333333332,
+        "result": 1,
+        "comment": ""
+    },
+    "H2": {
+        "state": null,
+        "mean_green": 177.38,
+        "result": 0,
+        "comment": ""
+    },
+    "H3": {
+        "state": null,
+        "mean_green": 89.32666666666667,
+        "result": 0,
+        "comment": ""
+    },
+    "H4": {
+        "state": null,
+        "mean_green": 160.98,
+        "result": 0,
+        "comment": ""
+    },
+    "H5": {
+        "state": null,
+        "mean_green": 176.55333333333334,
+        "result": 0,
+        "comment": ""
+    },
+    "H6": {
+        "state": null,
+        "mean_green": 215.33333333333334,
+        "result": 1,
+        "comment": ""
+    },
+    "H7": {
+        "state": null,
+        "mean_green": 220.98666666666668,
+        "result": 1,
+        "comment": ""
+    },
+    "H8": {
+        "state": null,
+        "mean_green": 205.66666666666666,
+        "result": 1,
+        "comment": ""
+    },
+    "H9": {
+        "state": null,
+        "mean_green": 157.82,
+        "result": 0,
+        "comment": ""
+    },
+    "H10": {
+        "state": null,
+        "mean_green": 206.53333333333333,
+        "result": 1,
+        "comment": ""
+    },
+    "H11": {
+        "state": null,
+        "mean_green": 209.42,
+        "result": 1,
+        "comment": ""
+    },
+    "H12": {
+        "state": null,
+        "mean_green": 252.51333333333332,
+        "result": 1,
+        "comment": ""
+    }
+}

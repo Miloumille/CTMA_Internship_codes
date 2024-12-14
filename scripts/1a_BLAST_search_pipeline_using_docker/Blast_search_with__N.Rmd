@@ -1,0 +1,79 @@
+```{r}
+library(Biostrings)
+library(dplyr)
+library(seqinr)
+library(stringr)
+library(MLmetrics)
+```
+
+
+# test DB For sequence containing N's
+```{r}
+test_H_with_N <- readDNAStringSet("data/new_data/Segment4withN.fasta")
+names(test_H_with_N) <- paste0(names(test_H_with_N), "_", seq_along(test_H_with_N))
+names(test_H_with_N)
+writeXStringSet(test_H_with_N, "data/new_data/Segment4withN_withIndex.fasta")
+```
+
+# perform BLAST search trough all the baches
+```{r}
+db_file <- c("data/new_data/dbblast")
+query_file <- c("data/new_data/Segment4withN_withIndex.fasta")
+output_file <- c("results/test.txt")
+
+myarg <- paste0('run --rm --platform linux/amd64 -v ',getwd(),':/data ncbi/blast:latest blastn -query /data/',query_file,' -db /data/',db_file,' -max_target_seqs 1 -num_threads 6 -outfmt 6 -out /data/',output_file)   
+system2(command='docker',args=myarg) 
+
+
+blast_data <- read.table(paste0("results/test.txt"))
+```
+
+# Set column names
+```{r}
+colnames(blast_data) <- c("query_id", "subject_id", "percent_identity", 
+                          "alignment_length", "mismatches", "gap_openings", 
+                          "query_start", "query_end", "subject_start", 
+                          "subject_end", "e_value", "bit_score")
+
+
+blast_data_grouped <- blast_data %>%
+  group_by(query_id) %>%
+  mutate(summed_length = sum(alignment_length)) %>%
+  distinct(query_id, .keep_all = TRUE)
+
+blast_data_grouped_results <- blast_data_grouped %>%
+  mutate(pred_type = str_extract(subject_id, "(?<=/_H)\\d{1,2}")) %>%
+  mutate(original_type = str_extract(query_id, "(?<=/_H)\\d{1,2}")) %>%
+  mutate(
+    pred_type = ifelse(pred_type %in% c("18", "17", "15", "14", "8"), "0", pred_type),
+    original_type = ifelse(original_type %in% c("18", "17", "15", "14", "8"), "0", original_type)
+  ) %>%
+  mutate(match = ifelse(pred_type == original_type, 1, 0))
+
+table(blast_data_grouped_results$match)
+```
+
+
+
+## Add the percentage values
+```{r}
+
+percentage <- read.csv("data/new_data/names_pourcentageN.csv")
+percentage$nom <- paste0(percentage$nom,"_",seq_along(percentage$nom))
+blast_data_with_percentage <- merge(blast_data_grouped_results, percentage, by.x = "query_id", by.y = "nom", all.x = TRUE)
+
+plot(jitter(blast_data_with_percentage$pourcentage_N), 
+     jitter(blast_data_with_percentage$match), 
+     xlab = "Percentage N", 
+     ylab = "Match (binary)", 
+     main = "Binary Match vs Percentage N", 
+     col = ifelse(blast_data_with_percentage$match == 0, "red", "blue"),
+     pch = 16)
+legend("topright", legend = c("Match = 0", "Match = 1"), col = c("red", "blue"), pch = 16)
+
+blast_data_with_percentage %>%
+  filter(match==0)
+```
+
+
+

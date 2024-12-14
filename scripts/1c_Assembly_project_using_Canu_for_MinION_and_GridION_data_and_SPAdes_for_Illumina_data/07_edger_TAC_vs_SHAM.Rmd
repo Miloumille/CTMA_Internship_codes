@@ -1,0 +1,169 @@
+---
+title: "edger Analysis "
+date: '`r format(Sys.time(), "%B %d, %Y,%H:%M")`'
+output: 
+  html_document:
+    smart: FALSE
+    code_folding: show
+    collapsed: yes
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 9
+    highlight: tango
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+# Load package
+```{r results='hide', message=FALSE, warning=FALSE}
+library(WriteXLS)
+library(SingleCellExperiment)
+library(edgeR)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(tximeta)
+library(readxl)
+library(Homo.sapiens)
+library(factoextra)
+library(FactoMineR)
+library(WriteXLS)
+library(purrr)
+library(Mus.musculus)
+
+```
+
+
+# construction of dge list - including omics and metadata
+
+
+
+```{r}
+
+counts <- read.csv('../results/Salmon_counts_gene.csv')
+counts <- counts[,-1]
+
+counts$ENSEMBL <- map_chr(.x = counts$ENSEMBL,.f = function(x) strsplit(x,split='\\.')[[1]][1])
+
+counts <- counts %>% column_to_rownames(var='ENSEMBL')
+counts <- round(counts)
+
+dge0 <- DGEList(counts=counts)
+dge0$genes <- data.frame(ENSEMBL=rownames(counts))
+dge0$genes$SYMBOL <- mapIds(x=Mus.musculus,keys=dge0$genes$ENSEMBL,keytype = 'ENSEMBL',column = 'SYMBOL')
+
+dim(dge0$samples)
+
+coldata <- read.csv('../data/sample_list.csv')
+dim(coldata)
+all(rownames(dge0$samples)==coldata$Run)
+
+dge0$samples$SampleName <- coldata$Run
+dge0$samples$Condition <- coldata$Source_name
+dge0$samples$Condition <- gsub(dge0$samples$Condition,pattern=' ',replacement='_')
+dge0$samples$Condition <- gsub(dge0$samples$Condition,pattern='-',replacement='_')
+dge0$samples$Condition <- gsub(dge0$samples$Condition,pattern='\\.',replacement='_')
+
+
+dge0$samples$Condition <- factor(dge0$samples$Condition,levels = c("sh_control_cardiomyocyte","TAC_cardiomyocyte","Adult_cardiomyocyte","E14_5_cardiomyocyte","Neonatal_cardiomyocyte","sh_TET2_cardiomyocyte"))
+
+```
+
+
+# Design and filter
+
+```{r}
+
+design <- c('~Condition')
+des <- model.matrix(as.formula(design), data = dge0$samples)
+keep <- edgeR::filterByExpr(dge0, design = des)
+dge <- dge0[keep, ]
+dge <- calcNormFactors(dge, method = "TMM")
+
+```
+
+
+
+#  ACP for publication (based on all genes)
+
+```{r}
+logcpm <- cpm(dge,log = T,prior.count = T,normalized.lib.sizes = T)
+
+pca <- PCA(t(logcpm), scale.unit = F,graph=F)
+fviz_pca_ind(pca, col.ind = dge$samples$Condition,repel = T ,title='',geom.ind='point',invisible='quali',addEllipses=F)
+
+```
+
+
+
+# model building
+
+```{r}
+ dge <- estimateDisp(dge, design = des)
+ qlfit <- glmQLFit(dge, design = des)
+ 
+ contrast <- "ConditionTAC_cardiomyocyte"
+ contrasts <- as.data.frame(makeContrasts(contrasts = contrast, levels = des))
+ 
+ qlf <- glmQLFTest(qlfit, contrast = contrasts)
+ gene_df <- qlf$genes |> as.data.frame() 
+ edger_result <- data.frame(gene_df,qlf$table)
+ 
+ edger_result <- edger_result %>%
+   arrange(PValue)
+ edger_result$FDR <- p.adjust(edger_result$PValue,method = 'BH')
+ edger_result$mlog10PValue <- -log10(edger_result$PValue)
+ head(edger_result,n=15)
+ 
+
+ 
+ edger_result %>%
+   filter(is.element(SYMBOL,c('Nppa','Nppb')))
+
+
+```
+
+
+ 
+# Volcano plot
+
+```{r}
+
+edger_result <- edger_result %>%
+  mutate(Modulation = case_when(logFC >= 0 & FDR <= 0.05 ~ "Up-regulated (FDR < 0.05)",
+                           logFC <= 0 & FDR <= 0.05 ~ "Down-regulated (FDR < 0.05)",
+                           TRUE ~ "Unchanged")) 
+
+
+ggplot(data=edger_result,aes(x=logFC,y=mlog10PValue,col=Modulation))+
+  geom_point(size=0.8)+
+  xlab(expression(log[2]~(fold-change)))+
+  ylab(expression(-log[10]~(P-value)))+
+  scale_color_manual(values=c('red',gray(0.5),'blue'))+
+  xlim(-max(abs(edger_result$logFC)),max(abs(edger_result$logFC)))+
+   geom_hline(yintercept=min(edger_result$mlog10PValue[edger_result$FDR<0.05]), linetype="dashed", color = gray(0.3),lwd=1)+
+  theme_bw()
+
+
+
+
+```
+ 
+
+
+
+# Sessioninfo
+
+```{r}
+sessionInfo()
+```
+
+
+

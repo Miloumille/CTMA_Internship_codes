@@ -1,0 +1,151 @@
+---
+title: "Perform BLAST searches for 120000 fasta sequences of viral segments"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r, Packages,include=FALSE}
+library(Biostrings)
+library(dplyr)
+library(seqinr)
+library(stringr)
+library(MLmetrics)
+```
+
+# Get the index of the data used for the RF methodology
+```{r Get Data}
+tableau = read.csv('data_proc/tableaukmer/tableauk5h.csv')
+```
+
+# Filter results to correspond to the mthodology of the the Random Forest method
+```{r Filter data into train and test}
+classification = tableau %>% select(-c(X)) %>% filter(H != 17) %>% filter(H != 18)%>% filter(H != 15)%>% filter(H != 14) %>% filter(H != 8) %>%
+  mutate(H = ifelse(H==16,yes = 8,no = H)) %>% mutate(H = ifelse(H==19,yes = 14,no = H)) %>% mutate(H = ifelse(H==20,yes = 15,no = H))
+
+train_index = readRDS("data_proc/index/train_index5H.rds")
+train_data_overall <- classification[train_index, ]
+train_data_overall$H <- as.factor(train_data_overall$H)
+test_data_overall <- classification[-train_index, ]
+
+index <- readRDS("data_proc/index/index_other5H.rds")
+other <- tableau %>% select(-X) %>% filter(H == 17 | H == 18 | H == 15 | H == 14 | H == 8) 
+other$H = 0
+other_test <- other[-index, ]
+
+test_data_overall <- bind_rows(test_data_overall,other_test)
+
+test_data_overall <- test_data_overall %>% select(name,H)
+
+files = c("data/database_gisaid/fluA_segment4.fasta","data/database_gisaid/fluvic_segment4.fasta","data/database_gisaid/fluyam_segment4.fasta")
+currentgenome = readDNAStringSet(files)
+```
+
+# Creation of train DB
+```{r Create the file for BLAST DB}
+selected_train_genome <- currentgenome[names(currentgenome) %in% train_data_overall$name]
+unique_train_genome <- selected_train_genome[!duplicated(names(selected_train_genome))]
+writeXStringSet(unique_train_genome, filepath = "data/blastdb/blastdb.fasta")
+```
+
+# Creation of test DB
+```{r Create files for bach DB}
+selectedgenome <- currentgenome[names(currentgenome) %in% test_data_overall$name]
+my_data_frame <- data.frame(
+  name = names(selectedgenome),
+  result = rep("",length(selectedgenome)),
+  alignementlength =  rep(0,length(selectedgenome))
+)
+
+my_data_frame <- my_data_frame %>% left_join(test_data_overall)
+
+seq_names <- names(selectedgenome)
+unique_indices <- !duplicated(seq_names)
+selectedgenome <- selectedgenome[unique_indices]
+writeXStringSet(selectedgenome, filepath = "data/blast_bach/test_sequences.fasta")
+
+split_fasta <- function(input_file, batch_size) {
+  sequences <- read.fasta(input_file, seqtype = "DNA", as.string = TRUE)
+  num_sequences <- length(sequences)
+  num_batches <- ceiling(num_sequences / batch_size)
+  for (i in 1:num_batches) {
+    start <- (i - 1) * batch_size + 1
+    end <- min(i * batch_size, num_sequences)
+    output_file <- paste0("data/blast_bach/test_data_batch_", i, ".fasta")
+    write.fasta(sequences[start:end], names = names(sequences)[start:end], 
+                file.out = output_file)
+    cat("Created batch:", output_file, "\n")
+  }
+}
+input_file <- "data/blast_bach/test_sequences.fasta"
+batch_size <- 1000
+split_fasta(input_file, batch_size)
+```
+
+# Create the blast DB
+```{r Create the BLAST DB}
+db_file <- c("data/blastdb/dbblast.fasta")
+
+
+myarg <- paste0('run --rm -v ',getwd(),':/data ncbi/blast makeblastdb -in /data/',db_file,' -dbtype nucl')   
+system2(command='docker',args=myarg) 
+```
+
+
+# perform BLAST search trough all the baches
+```{r Execute the search per baches of viral sequences}
+for (k in 1:1){
+  query_file <- c(paste("/data/blast_bach/test_data_batch_",k,".fasta",sep=""))
+  output_file <- c(paste("/results/blast_results_",k,".txt",sep=""))
+  
+  blast_command <- c(
+    "run", 
+    "--rm", 
+    "--platform", "linux/amd64",
+    "-v", paste0(getwd(), ":/data"), 
+    "ncbi/blast:latest", 
+    "blastn", 
+    "-query", paste("/data", query_file, sep = ""), 
+    "-db", paste("/data", db_file, sep = ""), 
+    "-max_target_seqs", 1, 
+    "-num_threads", "6",
+    "-outfmt", "6", 
+    "-out", paste("/data", output_file, sep = "")
+  )
+  system2("docker", args = blast_command, stdout = TRUE, stderr = TRUE)
+}
+```
+
+
+# Get results
+```{r Print the results of the BLAST searches}
+total_matches <- 0
+total_rows <- 0
+
+for (i in 1:1) {
+  blast_data <- read.table(paste0("results/blast_results_",i,".txt"), header = FALSE)
+  
+  # Set column names
+  colnames(blast_data) <- c("query_id", "subject_id", "percent_identity", 
+                            "alignment_length", "mismatches", "gap_openings", 
+                            "query_start", "query_end", "subject_start", 
+                            "subject_end", "e_value", "bit_score")
+  
+  # Process the data to extract pred_type and original_type
+  blast_data <- blast_data %>%
+    mutate(pred_type = str_extract(subject_id, "(?<=/_H)\\d{1,2}")) %>%
+    mutate(original_type = str_extract(query_id, "(?<=/_H)\\d{1,2}")) %>%
+    mutate(match = ifelse(pred_type == original_type, 1, 0))
+  
+  # Accumulate matches and total rows
+  total_matches <- total_matches + sum(blast_data$match)
+  total_rows <- total_rows + nrow(blast_data)
+}
+
+# Calculate the combined score
+combined_score <- (total_matches / total_rows) * 100
+combined_score
+```
+
+
+
+

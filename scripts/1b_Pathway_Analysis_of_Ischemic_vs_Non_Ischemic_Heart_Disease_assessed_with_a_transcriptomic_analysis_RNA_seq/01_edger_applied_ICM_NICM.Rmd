@@ -1,0 +1,250 @@
+---
+title: "edger Analysis "
+date: '`r format(Sys.time(), "%B %d, %Y,%H:%M")`'
+output: 
+  html_document:
+    smart: FALSE
+    code_folding: show
+    collapsed: yes
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 9
+    highlight: tango
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+# Load package
+```{r results='hide', message=FALSE, warning=FALSE}
+library(WriteXLS)
+library(SingleCellExperiment)
+library(edgeR)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(tximeta)
+library(readxl)
+library(Homo.sapiens)
+library(factoextra)
+library(FactoMineR)
+library(WriteXLS)
+
+```
+
+
+# construction of dge list - including omics and metadata
+
+
+
+```{r}
+
+counts <- read_excel('../data/Project heartmates non ischemic vs ischemic_SMIT1 implication_count tables with H49.xlsx')
+colnames(counts)[-1] <- paste0('H',colnames(counts)[-1])
+dge0 <- DGEList(counts=counts %>% dplyr::select(-Gene))
+dge0$genes <- data.frame(SYMBOL=counts$Gene)
+dim(dge0$samples)
+
+coldata <- read.csv('../data/Project heartmates non ischemic vs ischemic_SMIT1 implication_patients informations_2.csv')
+dim(coldata)
+coldata$Sample.name <- gsub(coldata$Sample.name,pattern='eartmate ',replacement='')
+coldata <- data.frame(coldata,omics_data_availeble = is.element(coldata$Sample.name,rownames(dge0$samples)))
+
+coldata
+coldata$Sex..M.vs.F.[coldata$Sex..M.vs.F.=='F '] <- 'F'
+
+coldata <- coldata %>%
+  filter(omics_data_availeble==TRUE)
+
+dim(coldata)
+
+dge0$samples$SampleName <- coldata$Sample.name
+dge0$samples$Disease <- coldata$Disease..NICM.vs.ICM.
+dge0$samples$Age <- coldata$Age.at.surgery..years.
+dge0$samples$Sex <- coldata$Sex..M.vs.F.
+dge0$samples$expression <- as.numeric(coldata$Expression.mRNA..deltaCt.against.human.RPL32.)
+
+
+dge0$samples$Disease <- factor(dge0$samples$Disease,levels = c('NICM','ICM'))
+
+```
+
+
+# Design and filter
+
+```{r}
+
+design <- c('~Disease+Age+Sex')
+des <- model.matrix(as.formula(design), data = dge0$samples)
+keep <- edgeR::filterByExpr(dge0, design = des)
+dge <- dge0[keep, ]
+dge <- calcNormFactors(dge, method = "TMM")
+
+```
+
+#  ACP to check M vs F in metadata (based on XY genes)
+```{r}
+
+dge$genes$localisation <- mapIds(x= Homo.sapiens,keys = dge$genes$SYMBOL,keytype = 'SYMBOL',column = 'CDSCHROM')
+
+dge_only_xy <- dge[!is.na(dge$genes$localisation),]
+dge_only_xy <- dge_only_xy[(dge_only_xy$genes$localisation=='chrX')|(dge_only_xy$genes$localisation=='chrY'),]
+
+logcpm <- cpm(dge_only_xy,log = T,prior.count = T,normalized.lib.sizes = T)
+
+pca_xy <- PCA(t(logcpm), scale.unit = F,graph=F)
+fviz_pca_ind(pca_xy, col.ind = dge_only_xy$samples$Sex,repel = T ,title='',geom.ind='text',invisible='quali',addEllipses=F)
+
+
+pdf('../results/ICM_vs_NICM/PCA_XY_CHECK_GENDER.pdf',width=6,height = 6)
+pca_xy <- PCA(t(logcpm), scale.unit = F,graph=F)
+fviz_pca_ind(pca_xy, col.ind = dge_only_xy$samples$Sex,repel = T ,title='',geom.ind='text',invisible='quali',addEllipses=F)
+dev.off()
+
+```
+
+# Remove patient H35
+
+```{r}
+dge
+dge <- dge[,dge$samples$SampleName!='H35']
+dge
+```
+
+
+
+#  ACP for publication (based on all genes)
+
+```{r}
+logcpm <- cpm(dge,log = T,prior.count = T,normalized.lib.sizes = T)
+
+pca <- PCA(t(logcpm), scale.unit = F,graph=F)
+fviz_pca_ind(pca, col.ind = dge$samples$Disease,repel = T ,title='',geom.ind='point',invisible='quali',addEllipses=F)
+
+pdf('../results/ICM_vs_NICM/PCA_ALL_GENES_POINTS.pdf',width=6,height = 6)
+fviz_pca_ind(pca, col.ind = dge$samples$Disease,repel = T ,title='',geom.ind='point',invisible='quali',addEllipses=F)
+dev.off()
+
+pdf('../results/ICM_vs_NICM/PCA_ALL_GENES_LABEL.pdf',width=6,height = 6)
+fviz_pca_ind(pca, col.ind = dge$samples$Disease,repel = T ,title='',geom.ind='text',invisible='quali',addEllipses=F)
+dev.off()
+
+
+```
+
+
+
+# model building
+
+```{r}
+ 
+ design <- c('~Disease+Age+Sex')
+ des <- model.matrix(as.formula(design), data = dge$samples)
+
+ dge <- estimateDisp(dge, design = des)
+ qlfit <- glmQLFit(dge, design = des)
+ 
+ contrast <- "DiseaseICM"
+ contrasts <- as.data.frame(makeContrasts(contrasts = contrast, levels = des))
+ 
+ qlf <- glmQLFTest(qlfit, contrast = contrasts)
+ gene_df <- qlf$genes |> as.data.frame() 
+ edger_result <- data.frame(gene_df,qlf$table)
+ 
+ edger_result <- edger_result %>%
+   arrange(PValue)
+ edger_result$FDR <- p.adjust(edger_result$PValue,method = 'BH')
+ edger_result$mlog10PValue <- -log10(edger_result$PValue)
+ head(edger_result,n=15)
+ 
+ edger_result %>%
+   dplyr::filter(SYMBOL=='SLC5A3')
+
+
+WriteXLS(edger_result,'../results/ICM_vs_NICM/DGE.xls',row.names = F)
+ 
+```
+
+
+
+# boxplot of top regulated genes
+
+```{r}
+logcpm <- cpm(dge,log = T,prior.count = T,normalized.lib.sizes = T)
+rownames(logcpm) <- dge$genes$SYMBOL
+
+metadata <- dge$samples
+
+expression_long <- data.frame(SYMBOL=edger_result$SYMBOL[1:12]) %>%
+  left_join(data.frame(logcpm) %>% rownames_to_column(var='SYMBOL')) %>%
+  pivot_longer(cols = where(is.numeric),names_to = "SampleName", values_to = "logCPM") %>%
+  left_join(metadata,by='SampleName') %>%
+  mutate(SYMBOL = fct_inorder(SYMBOL))
+
+ggplot(expression_long, aes(x = Disease, y = logCPM)) + 
+  geom_jitter(width = 0.05)+
+  geom_boxplot(aes(fill=Disease),alpha=0.5)+
+  facet_wrap(SYMBOL~.,nrow=2)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+```
+
+
+ 
+# Volcano plot
+
+```{r}
+
+edger_result <- edger_result %>%
+  mutate(Modulation = case_when(logFC >= 0 & FDR <= 0.05 ~ "Up-regulated (FDR < 0.05)",
+                           logFC <= 0 & FDR <= 0.05 ~ "Down-regulated (FDR < 0.05)",
+                           TRUE ~ "Unchanged")) 
+
+
+ggplot(data=edger_result,aes(x=logFC,y=mlog10PValue,col=Modulation))+
+  geom_point(size=0.8)+
+  xlab(expression(log[2]~(fold-change)))+
+  ylab(expression(-log[10]~(P-value)))+
+  scale_color_manual(values=c('red',gray(0.5),'blue'))+
+  xlim(-max(abs(edger_result$logFC)),max(abs(edger_result$logFC)))+
+   geom_hline(yintercept=min(edger_result$mlog10PValue[edger_result$FDR<0.05]), linetype="dashed", color = gray(0.3),lwd=1)+
+  theme_bw()
+
+
+pdf('../results/ICM_vs_NICM/volcano_plot.pdf',width=7,height = 6)
+ggplot(data=edger_result,aes(x=logFC,y=mlog10PValue,col=Modulation))+
+  geom_point(size=0.8)+
+  xlab(expression(log[2]~(fold-change)))+
+  ylab(expression(-log[10]~(P-value)))+
+  scale_color_manual(values=c('red',gray(0.5),'blue'))+
+  xlim(-max(abs(edger_result$logFC)),max(abs(edger_result$logFC)))+
+   geom_hline(yintercept=min(edger_result$mlog10PValue[edger_result$FDR<0.05]), linetype="dashed", color = gray(0.3),lwd=1)+
+  theme_bw()
+dev.off()
+
+
+
+```
+ 
+ 
+ 
+
+ 
+
+
+
+# Sessioninfo
+
+```{r}
+sessionInfo()
+```
+
+
+
